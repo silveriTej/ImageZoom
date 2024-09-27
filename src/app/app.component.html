@@ -1,0 +1,19 @@
+<div class="app-container">
+  <h1>Image Gallery</h1>
+
+ 
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <img
+    [src]="['assets/pexels-kasperphotography-1042423.jpeg', 'assets/tree scenery.jpeg', 'assets/pexels-thatguycraig000-1563356.jpeg'][0]"
+    alt="Zoomable"
+    (click)="openImagePopup(0)"
+    class="thumbnail" />
+</div>
+
+<app-image-zoom 
+  [imageUrls]="['assets/pexels-kasperphotography-1042423.jpeg', 'assets/tree scenery.jpeg', 'assets/pexels-thatguycraig000-1563356.jpeg']" 
+  [currentIndex]="currentIndex" 
+  [isPopupOpen]="isPopupOpen" 
+  (closePopup)="closeImagePopup()">
+</app-image-zoom>

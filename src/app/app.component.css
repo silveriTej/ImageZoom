@@ -1,0 +1,26 @@
+.app-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+h1 {
+  color: #333;
+}
+
+.thumbnail {
+  width: 200px; 
+  margin: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease; 
+}
+
+.thumbnail:hover {
+  transform: scale(1.05); 
+}
+
+
+.error-message {
+  color: red;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
