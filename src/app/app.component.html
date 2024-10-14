@@ -1,46 +1,16 @@
-<div class="app-container"> 
-  <h1>Image Gallery</h1>
-
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-
-  <img
-    *ngIf="imageUrls.length > 0"
-    [src]="imageUrls[currentIndex]"
-    alt="Thumbnail"
+<div class="image-gallery">
+  <img 
+    src="assets/pexels-kasperphotography-1042423.jpeg" 
     (click)="openImagePopup(0)" 
-    class="thumbnail" />
-
-  <!-- Popup -->
-  <div *ngIf="isPopupOpen" class="popup" (click)="closeImagePopup()">
-    <div class="popup-content" (click)="$event.stopPropagation()">
-      <button class="close-btn" (click)="closeImagePopup()">X</button>
-
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-        <button (click)="clearError()">Dismiss</button>
-      </div>
-
-      <img
-        #zoomedImage
-        [src]="imageUrls[currentIndex]"
-        alt="Zoomed Image"
-        class="zoomed-image"
-        [ngStyle]="{
-          'transform': 'scale(' + scale + ')',
-          'transform-origin': transformOrigin
-        }"
-        (click)="onImageClick()"
-        [ngClass]="{
-          'zoom-in': scale < maxScale,
-          'zoom-out': scale > minScale
-        }" />
-
-      <button class="nav-btn prev" 
-        (click)="previousImage()"
-        [ngClass]="{'disabled': currentIndex === 0}">&#10094;</button>
-      <button class="nav-btn next" 
-        (click)="nextImage()"
-        [ngClass]="{'disabled': currentIndex === imageUrls.length - 1}">&#10095;</button>
-    </div>
-  </div>
+    alt="Gallery Image" 
+    class="thumbnail"
+  />
 </div>
+
+<app-image-zoom 
+  *ngIf="isPopupOpen" 
+  [imageUrls]="imageUrls" 
+  [currentIndex]="currentIndex" 
+  [isPopupOpen]="isPopupOpen" 
+  (closePopup)="closeImagePopup()">
+</app-image-zoom>

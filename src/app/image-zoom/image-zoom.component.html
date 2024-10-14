@@ -1,16 +1,34 @@
-<div class="popup" *ngIf="isPopupOpen" (click)="closePopup.emit()">
-  <div class="popup-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="closePopup.emit()">X</button>
-    
-    <img
-      #zoomedImage
-      [src]="imageUrls[currentIndex]"
-      alt="Zoomed Image"
-      class="zoomed-image"
-      [ngStyle]="{
-        'transform': 'scale(' + scale + ')',
-        'transform-origin': transformOrigin
-      }"
-    />
+<div *ngIf="isPopupOpen" class="popup" (click)="closeImagePopup()">
+    <div class="popup-content" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeImagePopup()">X</button>
+  
+      <!-- Error Message Display -->
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+        <button (click)="clearError()">Dismiss</button>
+      </div>
+  
+      <img
+        #zoomedImage
+        [src]="imageUrls[currentIndex]"
+        alt="Zoomed Image"
+        class="zoomed-image"
+        [ngStyle]="{
+          'transform': 'scale(' + scale + ')',
+          'transform-origin': transformOrigin
+        }"
+        (click)="onImageClick()"
+        [ngClass]="{
+          'zoom-in': scale < maxScale,
+          'zoom-out': scale > minScale
+        }" />
+  
+      <button class="nav-btn prev" 
+        (click)="previousImage()"
+        [ngClass]="{'disabled': currentIndex === 0}">&#10094;</button>
+      <button class="nav-btn next" 
+        (click)="nextImage()"
+        [ngClass]="{'disabled': currentIndex === imageUrls.length - 1}">&#10095;</button>
+    </div>
   </div>
-</div>
+  
