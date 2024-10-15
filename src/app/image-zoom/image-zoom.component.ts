@@ -1,99 +1,100 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Import CommonModule
 
 @Component({
   selector: 'app-image-zoom',
   templateUrl: './image-zoom.component.html',
   styleUrls: ['./image-zoom.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule] // Add CommonModule to the imports
 })
 export class ImageZoomComponent {
-  @Input() imageUrls!: string[]; 
-  @Input() currentIndex: number = 0;
-  @Input() isPopupOpen: boolean = false;
-  @Output() closePopup: EventEmitter<void> = new EventEmitter();
-
-  @ViewChild('zoomedImage') zoomedImage!: ElementRef;
+  @Input() imageUrls!: string[]; // Accepts an array of image URLs
+  currentIndex: number = 0;
+  isPopupOpen: boolean = false; 
   scale: number = 1;
   maxScale: number = 10;
   minScale: number = 1;
-  transformOrigin: string = 'center center';
-
   errorMessage: string | null = null; 
+  transformOrigin: string = '50% 50%'; // Default transform origin to center
+  private lastMousePosition = { x: 0, y: 0 }; // To track last mouse position
+
+  // Opens the image popup with the image at the given index
+  openImagePopup(index: number) {
+    if (index >= 0 && index < this.imageUrls.length) {
+      this.currentIndex = index;
+      this.isPopupOpen = true;
+      this.errorMessage = '';  
+    } else {
+      this.errorMessage = 'Invalid image index.';
+    }
+  }
 
   closeImagePopup() {
-    try {
-      this.closePopup.emit();
-      this.scale = this.minScale;
-    } catch (error) {
-      this.handleError('Error closing popup');
+    this.isPopupOpen = false; 
+    this.scale = this.minScale; 
+  }
+
+  zoomIn() {
+    if (this.scale < this.maxScale) {
+      this.scale += 0.5;
     }
   }
 
-  onImageClick() {
-    try {
-      if (this.scale < this.maxScale) {
-        this.scale += 1;
-      } else if (this.scale > this.minScale) {
-        this.scale -= 1;
-      }
-    } catch (error) {
-      this.handleError('Error while zooming image');
-    }
-  }
-
-  @HostListener('wheel', ['$event'])
-  onWheel(event: WheelEvent) {
-    try {
-      if (this.isPopupOpen) {
-        event.preventDefault();
-
-        const imageElement = this.zoomedImage.nativeElement;
-        const rect = imageElement.getBoundingClientRect();
-        const offsetX = event.clientX - rect.left;
-        const offsetY = event.clientY - rect.top;
-
-        this.transformOrigin = `${(offsetX / rect.width) * 100}% ${(offsetY / rect.height) * 100}%`;
-
-        if (event.deltaY < 0 && this.scale < this.maxScale) {
-          this.scale += 0.1;
-        } else if (event.deltaY > 0 && this.scale > this.minScale) {
-          this.scale -= 0.1;
-        }
-      }
-    } catch (error) {
-      this.handleError('Error during zoom with scroll wheel');
+  zoomOut() {
+    if (this.scale > this.minScale) {
+      this.scale -= 0.5;
     }
   }
 
   nextImage() {
-    try {
-      if (this.currentIndex < this.imageUrls.length - 1) {
-        this.currentIndex++;
-      } else {
-        console.warn('Reached the last image');
-      }
-    } catch (error) {
-      this.handleError('Error navigating to the next image');
+    if (this.currentIndex < this.imageUrls.length - 1) {
+      this.currentIndex++;
     }
   }
 
   previousImage() {
-    try {
-      if (this.currentIndex > 0) {
-        this.currentIndex--;
-      } else {
-        console.warn('Already at the first image');
-      }
-    } catch (error) {
-      this.handleError('Error navigating to the previous image');
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
     }
   }
 
-  handleError(message: string) {
-    console.error(message);
-    this.errorMessage = message; 
+  @HostListener('wheel', ['$event'])
+  onScroll(event: WheelEvent) {
+    event.preventDefault(); // Prevent the default scroll behavior
+
+    // Set the last mouse position based on the current mouse position
+    this.lastMousePosition = {
+      x: event.clientX,
+      y: event.clientY
+    };
+
+    // Calculate the image's bounding rectangle
+    const rect = (event.target as HTMLImageElement).getBoundingClientRect();
+
+    // Calculate the relative mouse position within the image
+    const x = this.lastMousePosition.x - rect.left; 
+    const y = this.lastMousePosition.y - rect.top;
+
+    // Update transform-origin based on cursor position
+    this.transformOrigin = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
+
+    // Zoom based on scroll direction
+    if (event.deltaY < 0) {
+      this.zoomIn(); // Scroll up - zoom in
+    } else {
+      this.zoomOut(); // Scroll down - zoom out
+    }
+  }
+
+  onImageClick(event: MouseEvent) {
+    // Calculate cursor position relative to the image
+    const rect = (event.target as HTMLImageElement).getBoundingClientRect();
+    const x = event.clientX - rect.left; // x position within the image
+    const y = event.clientY - rect.top;  // y position within the image
+
+    // Set transform-origin based on cursor position
+    this.transformOrigin = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
   }
 
   clearError() {

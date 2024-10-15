@@ -1,4 +1,5 @@
 <div class="image-gallery">
+  <h1>Image Gallery</h1>
   <img 
     src="assets/pexels-kasperphotography-1042423.jpeg" 
     (click)="openImagePopup(0)" 
@@ -7,10 +8,3 @@
   />
 </div>
 
-<app-image-zoom 
-  *ngIf="isPopupOpen" 
-  [imageUrls]="imageUrls" 
-  [currentIndex]="currentIndex" 
-  [isPopupOpen]="isPopupOpen" 
-  (closePopup)="closeImagePopup()">
-</app-image-zoom>
