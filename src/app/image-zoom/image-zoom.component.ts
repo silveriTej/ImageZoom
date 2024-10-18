@@ -1,12 +1,12 @@
-import { Component, Input, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Import CommonModule
+import { Component, Input, HostListener, ViewContainerRef, Injector, ComponentFactoryResolver, ComponentRef, ApplicationRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-image-zoom',
   templateUrl: './image-zoom.component.html',
   styleUrls: ['./image-zoom.component.css'],
   standalone: true,
-  imports: [CommonModule] // Add CommonModule to the imports
+  imports: [CommonModule]
 })
 export class ImageZoomComponent {
   @Input() imageUrls!: string[]; // Accepts an array of image URLs
@@ -18,6 +18,15 @@ export class ImageZoomComponent {
   errorMessage: string | null = null; 
   transformOrigin: string = '50% 50%'; // Default transform origin to center
   private lastMousePosition = { x: 0, y: 0 }; // To track last mouse position
+  private imageZoomRef!: ComponentRef<ImageZoomComponent>; // Declare imageZoomRef
+
+  // Inject ViewContainerRef, Injector, ComponentFactoryResolver, and ApplicationRef for dynamic operations
+  constructor(
+    private viewContainerRef: ViewContainerRef, 
+    private injector: Injector,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private appRef: ApplicationRef // Add ApplicationRef for managing the component view
+  ) {}
 
   // Opens the image popup with the image at the given index
   openImagePopup(index: number) {
@@ -28,6 +37,12 @@ export class ImageZoomComponent {
     } else {
       this.errorMessage = 'Invalid image index.';
     }
+  }
+
+  openComponent(images: string[], currentIndex: number) {
+    this.imageUrls = images;  // Update the imageUrls array
+    this.injectImageZoomComponent();  // Call the injectImageZoomComponent method
+    this.imageZoomRef.instance.openImagePopup(currentIndex);  // Open the image popup with the current index
   }
 
   closeImagePopup() {
@@ -59,6 +74,7 @@ export class ImageZoomComponent {
     }
   }
 
+  // Handle mouse wheel events for zooming and updating the transform origin
   @HostListener('wheel', ['$event'])
   onScroll(event: WheelEvent) {
     event.preventDefault(); // Prevent the default scroll behavior
@@ -88,16 +104,28 @@ export class ImageZoomComponent {
   }
 
   onImageClick(event: MouseEvent) {
-    // Calculate cursor position relative to the image
     const rect = (event.target as HTMLImageElement).getBoundingClientRect();
     const x = event.clientX - rect.left; // x position within the image
     const y = event.clientY - rect.top;  // y position within the image
-
-    // Set transform-origin based on cursor position
     this.transformOrigin = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
   }
 
   clearError() {
     this.errorMessage = null; 
+  }
+
+  // Example method to use ViewContainerRef for dynamic component creation
+  private injectImageZoomComponent() {
+    const factory = this.componentFactoryResolver.resolveComponentFactory(ImageZoomComponent);
+
+    // Dynamically create the component inside the current ViewContainerRef
+    const componentRef: ComponentRef<ImageZoomComponent> = this.viewContainerRef.createComponent(factory, 0, this.injector);
+    
+    // Attach the component to the ApplicationRef so it becomes part of the app view
+    this.appRef.attachView(componentRef.hostView);
+
+    // Optionally pass data to the new component instance
+    componentRef.instance.imageUrls = this.imageUrls;
+    this.imageZoomRef = componentRef; // Store reference for further operations
   }
 }
